@@ -1,0 +1,46 @@
+--- ../../../github/openresty/nginx-releases/src/core/ngx_times.c	2016-07-27 17:25:45.000000000 +0800
++++ nginx-1.9.15/src/core/ngx_times.c	2016-07-08 18:10:29.000000000 +0800
+@@ -81,6 +81,7 @@
+     ngx_tm_t         tm, gmt;
+     time_t           sec;
+     ngx_uint_t       msec;
++    ngx_uint_t       usec;
+     ngx_time_t      *tp;
+     struct timeval   tv;
+ 
+@@ -91,7 +92,8 @@
+     ngx_gettimeofday(&tv);
+ 
+     sec = tv.tv_sec;
+-    msec = tv.tv_usec / 1000;
++    usec = tv.tv_usec;
++    msec = usec / 1000;
+ 
+     ngx_current_msec = (ngx_msec_t) sec * 1000 + msec;
+ 
+@@ -99,6 +101,7 @@
+ 
+     if (tp->sec == sec) {
+         tp->msec = msec;
++        tp->usec = usec;
+         ngx_unlock(&ngx_time_lock);
+         return;
+     }
+@@ -113,6 +116,7 @@
+ 
+     tp->sec = sec;
+     tp->msec = msec;
++    tp->usec = usec;
+ 
+     ngx_gmtime(sec, &gmt);
+
+--- ../../../github/openresty/nginx-releases/src/core/ngx_times.h	2016-07-27 17:25:45.000000000 +0800
++++ nginx-1.9.15/src/core/ngx_times.h	2016-07-08 18:10:50.000000000 +0800
+@@ -16,6 +16,7 @@
+ typedef struct {
+     time_t      sec;
+     ngx_uint_t  msec;
++    ngx_uint_t  usec;
+     ngx_int_t   gmtoff;
+ } ngx_time_t;
+

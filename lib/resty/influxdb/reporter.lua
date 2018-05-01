@@ -3,8 +3,6 @@ local point = require "resty.influxdb.point"
 local http = require "resty.http"
 
 local setmetatable = setmetatable
-local escape_uri = ngx.escape_uri
-local concat = table.concat
 local pairs = pairs
 
 local DEFAULT_RETENTION_POLICY = "default"
