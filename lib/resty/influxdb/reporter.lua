@@ -1,25 +1,58 @@
 -- Copyright (C) by Jianhao Dai (Toruneko)
 local point = require "resty.influxdb.point"
-local http = require "resty.http"
+local client = require "resty.influxdb.client"
 
 local setmetatable = setmetatable
+local timer_at = ngx.timer.at
+local concat = table.concat
+local tonumber = tonumber
 local pairs = pairs
-
-local DEFAULT_RETENTION_POLICY = "default"
+local error = error
 
 local _M = { _VERSION = '0.01' }
 local mt = { __index = _M }
 
-function _M.new(url, username, password, database, tags)
+local ok, new_tab = pcall(require, "table.new")
+if not ok then
+    new_tab = function(narr, nrec) return {} end
+end
+
+local do_flush
+do_flush = function(premature, reporter)
+    reporter:flush()
+
+    local ok, err = timer_at(reporter.interval, do_flush, reporter)
+    if not ok then
+        error(err)
+    end
+end
+
+function _M.new(url, username, password, database, opts)
+    if not opts then
+        opts = {}
+    end
+    opts.tags = opts.tags or {}
+    opts.async = opts.async and true or false
+    opts.size = tonumber(opts.size) or 100
+    opts.interval = tonumber(opts.interval) or 1000
+
     local reporter = setmetatable({
-        url = url,
-        username = username,
-        password = password,
-        database = database,
-        tags = tags
+        client = client.new(url, username, password, database),
+        tags = opts.tags,
+        async = opts.async,
+        size = opts.size,
+        interval = opts.interval,
+        buffer = new_tab(opts.size, 0)
     }, mt)
 
-    reporter:query(database, "CREATE DATABASE \"" + database + "\" WITH DURATION 2w REPLICATION 1 NAME \"default\"")
+    if reporter.async then
+        local ok, err = timer_at(reporter.interval, do_flush, reporter)
+        if not ok then
+            error(err)
+        end
+    end
+
+    reporter.client:query("CREATE DATABASE \"" + database + "\" WITH DURATION 2w REPLICATION 1 NAME \"default\"")
 
     return reporter
 end
@@ -46,44 +79,33 @@ function _M.report(self, measurement)
         end
     end
     if not empty then
-        self:write(self.database, DEFAULT_RETENTION_POLICY, p)
+        self:write(p)
     end
 end
 
-function _M.write(self, db, rp, point)
-    local httpc = http:new()
-    httpc:set_timeout(5000)
-
-    local response = httpc:request_uri(self.url, {
-        path = "write",
-        method = "POST",
-        headers = {
-            ["Content-Type"] = "text/plain"
-        },
-        query = {
-            u = self.username,
-            p = self.password,
-            db = db,
-            rp = rp,
-            precision = "n",
-            consistency = "one"
-        },
-        body = point:lineProtocol()
-    })
+function _M.write(self, point)
+    if self.async then
+        self.buffer[#self.buffer + 1] = point:lineProtocol()
+        if #self.buffer > self.size then
+            self:flush()
+        end
+    else
+        self.client:write(point)
+    end
 end
 
-function _M.query(self, db, q)
-    local httpc = http.new()
-    httpc:set_timeout(5000)
-    local response = httpc:request_uri(self.url, {
-        path = "query",
-        method = "POST",
-        query = {
-            u = self.username,
-            p = self.password,
-            db = db,
-            q = q
-        }
+function _M.flush(self)
+    if #self.buffer == 0 then
+        return
+    end
+
+    local buffer = self.buffer
+    self.buffer = new_tab(self.size, 0)
+
+    self.client:write({
+        lineProtocol = function()
+            return concat(buffer, "\n")
+        end
     })
 end
 
