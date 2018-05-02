@@ -8,6 +8,7 @@ local str_char = string.char
 local str_len = string.len
 local tonumber = tonumber
 local ngx_time = ngx.time
+local ngx_utime = ngx.usec_time
 local pairs = pairs
 local error = error
 local type = type
@@ -89,12 +90,12 @@ local function concatenate_metrics(metrics)
 end
 
 local function formated_time()
-    if ngx.usec_time then
-        return (tonumber(ngx_time()) + (tonumber(ngx.usec_time()) / 1000 / 1000)) * 1000 * 1000 * 1000
+    if ngx_utime then
+        return tonumber(ngx_time()) .. str_format("%06d", tonumber(ngx_utime()))
     else
         local tm = ffi_new("struct timeval")
         C.gettimeofday(tm, ffi_null)
-        return (tonumber(tm.tv_sec) + (tonumber(tm.tv_usec) / 1000 / 1000)) * 1000 * 1000 * 1000
+        return tonumber(tm.tv_sec) .. str_format("%06d", tonumber(tm.tv_usec))
     end
 end
 

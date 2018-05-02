@@ -20,7 +20,7 @@ function _M.write(self, point, opts)
         opts = {}
     end
     opts.rp = opts.rp or "default"
-    opts.precision = opts.precision or "n"
+    opts.precision = opts.precision or "u"
     opts.consistency = opts.consistency or "one"
 
     local httpc = http:new()
