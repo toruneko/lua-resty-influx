@@ -17,7 +17,7 @@ if not ok then
 end
 
 local function create_key(key, ...)
-    local arr = ...
+    local arr = {...}
     local tags = new_tab(0, #arr / 2)
     for i = 1, #arr / 2 do
         tags[arr[i * 2 - 1]] = arr[i * 2]
@@ -56,7 +56,7 @@ function _M.report(self)
     local measurements = self.map
     for _, measurement in pairs(measurements) do
         for _, reporter in ipairs(self.reporters) do
-            reporter.report(measurement)
+            reporter:report(measurement)
         end
         measurement:clear()
     end

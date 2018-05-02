@@ -34,7 +34,7 @@ function _M.new(url, username, password, database, opts)
     opts.tags = opts.tags or {}
     opts.async = opts.async and true or false
     opts.size = tonumber(opts.size) or 100
-    opts.interval = tonumber(opts.interval) or 1000
+    opts.interval = tonumber(opts.interval) or 1
 
     local reporter = setmetatable({
         client = client.new(url, username, password, database),
@@ -52,7 +52,7 @@ function _M.new(url, username, password, database, opts)
         end
     end
 
-    reporter.client:query("CREATE DATABASE \"" + database + "\" WITH DURATION 2w REPLICATION 1 NAME \"default\"")
+--    reporter.client:query("CREATE DATABASE \"" + database + "\" WITH DURATION 2w REPLICATION 1 NAME \"default\"")
 
     return reporter
 end
@@ -61,7 +61,7 @@ function _M.report(self, measurement)
     local p = point.new(measurement:get_key())
     p:tag(self.tags)
     p:tag(measurement:get_tags())
-    local metricses = measurement:get_metrics()
+    local metricses = measurement:get_metricses()
 
     local empty = true
     for name, metrics in pairs(metricses) do

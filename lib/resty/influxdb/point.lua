@@ -4,6 +4,7 @@ local setmetatable = setmetatable
 local str_format = string.format
 local concat = table.concat
 local str_byte = string.byte
+local str_char = string.char
 local str_len = string.len
 local tonumber = tonumber
 local ngx_time = ngx.time
@@ -39,12 +40,12 @@ local function escape(str)
     for i = 1, len do
         local b = str_byte(str, i)
         if b == ' ' or b == ',' or b == '=' then
-            res[#res + 1] = "\\"
-            res[#res + 1] = b
+            res[#res + 1] = str_char("\\")
+            res[#res + 1] = str_char(b)
         elseif b == '"' then
-            res[#res + 1] = "\\\""
+            res[#res + 1] = str_char("\\\"")
         else
-            res[#res + 1] = b
+            res[#res + 1] = str_char(b)
         end
     end
 

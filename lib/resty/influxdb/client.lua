@@ -27,7 +27,7 @@ function _M.write(self, point, opts)
     httpc:set_timeout(5000)
 
     httpc:request_uri(self.url, {
-        path = "write",
+        path = "/write",
         method = "POST",
         headers = {
             ["Content-Type"] = "text/plain"
@@ -49,7 +49,7 @@ function _M.query(self, q)
     httpc:set_timeout(5000)
 
     httpc:request_uri(self.url, {
-        path = "query",
+        path = "/query",
         method = "POST",
         query = {
             u = self.username,

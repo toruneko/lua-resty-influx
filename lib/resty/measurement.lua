@@ -17,7 +17,7 @@ end
 
 function _M.new(m_key, cache)
     return setmetatable({
-        key = m_key,
+        m_key = m_key,
         cache = cache,
         metrics = new_tab(0, 100)
     }, mt)
@@ -53,7 +53,7 @@ function _M.timer(self, name)
     return tm
 end
 
-function _M.get_metrics(self)
+function _M.get_metricses(self)
     return self.metrics
 end
 
@@ -73,7 +73,7 @@ function _M.clear(self)
     for name, metrics in pairs(self.metrics) do
         if metrics:has_value() then
             metrics:clear()
-            self.fields[name] = nil
+            self.metrics[name] = nil
         end
     end
 end
