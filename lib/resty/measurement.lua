@@ -28,7 +28,7 @@ function _M.counter(self, name)
         return self.metrics[name]
     end
 
-    local cnt = counter.new(name, self.cache)
+    local cnt = counter.new(self:get_key() .. ":" .. name, self.cache)
     self.metrics[name] = cnt
     return cnt
 end
@@ -38,7 +38,7 @@ function _M.averager(self, name)
         return self.metrics[name]
     end
 
-    local avg = averager.new(name, self.cache)
+    local avg = averager.new(self:get_key() .. ":" .. name, self.cache)
     self.metrics[name] = avg
     return avg
 end
@@ -48,7 +48,7 @@ function _M.timer(self, name)
         return self.metrics[name]
     end
 
-    local tm = timer.new(name, self.cache)
+    local tm = timer.new(self:get_key() .. ":" .. name, self.cache)
     self.metrics[name] = tm
     return tm
 end

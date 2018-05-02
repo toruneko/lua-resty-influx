@@ -7,7 +7,6 @@ local mt = { __index = _M }
 
 function _M.new(name, cache)
     return setmetatable({
-        name = name,
         cache = cache,
         total = "metrics:avg:total:" .. name,
         count = "metrics:avg:count:" .. name
@@ -26,7 +25,7 @@ end
 function _M.get_value(self)
     local total = self.cache:get(self.total)
     local count = self.cache:get(self.count)
-    if count == 0 then
+    if not count or count == 0 then
         return 0
     end
     return total / count

@@ -7,7 +7,6 @@ local mt = { __index = _M }
 
 function _M.new(name, cache)
     return setmetatable({
-        name = name,
         cache = cache,
         count = "metrics:count:" .. name
     }, mt)
@@ -26,7 +25,7 @@ function _M.has_value(self)
 end
 
 function _M.get_value(self)
-    return self.cache:get(self.count)
+    return self.cache:get(self.count) or 0
 end
 
 function _M.get_values(self)

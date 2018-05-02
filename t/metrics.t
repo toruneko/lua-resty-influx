@@ -54,15 +54,18 @@ server {
     location = /t {
         content_by_lua_block {
             local registry = _G.registry
-            local measurement = registry:measurement("request", "partner", "damai")
-            local context = measurement:timer("rt"):time()
+            for j = 1, 10 do
+                local measurement = registry:measurement("request" .. j, "partner", "damai")
+                local context = measurement:timer("rt"):time()
 
-            for i = 1, 10 do
-                measurement:counter("tps"):mark(i)
-                measurement:averager("size"):update(i)
+                for i = 1, 10 do
+                    measurement:counter("tps"):mark(i)
+                    measurement:averager("size"):update(i)
+                end
+
+                context:stop()
             end
 
-            context:stop()
             registry:report()
             ngx.sleep(2)
             ngx.say("ok")
