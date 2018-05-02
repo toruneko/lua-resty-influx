@@ -3,6 +3,8 @@
 local setmetatable = setmetatable
 local str_format = string.format
 local concat = table.concat
+local str_byte = string.byte
+local str_len = string.len
 local tonumber = tonumber
 local ngx_time = ngx.time
 local pairs = pairs
@@ -31,8 +33,22 @@ if not ok then
 end
 
 -- escape value " ", ",", "=" => "\\ ", "\\,", "\\="
-local function escape(value)
-    return value
+local function escape(str)
+    local len = str_len(str)
+    local res = new_tab(len, 0)
+    for i = 1, len do
+        local b = str_byte(str, i)
+        if b == ' ' or b == ',' or b == '=' then
+            res[#res + 1] = "\\"
+            res[#res + 1] = b
+        elseif b == '"' then
+            res[#res + 1] = "\\\""
+        else
+            res[#res + 1] = b
+        end
+    end
+
+    return concat(res, "")
 end
 
 local function concatenated_tags(tags)
@@ -49,12 +65,6 @@ local function concatenated_tags(tags)
     return concat(tab, "")
 end
 
---[[
-		NumberFormat numberFormat = NumberFormat.getInstance(Locale.ENGLISH);
-		numberFormat.setMaximumFractionDigits(340);
-		numberFormat.setGroupingUsed(false);
-		numberFormat.setMinimumFractionDigits(1);
- ]]
 local function concatenate_metrics(metrics)
     local tab = new_tab(0, 100)
 
