@@ -9,7 +9,7 @@ use Cwd qw(cwd);
 
 #repeat_each(2);
 
-plan tests => repeat_each() * (blocks() * 3);
+plan tests => repeat_each() * (blocks() * 3 + 1);
 
 my $pwd = cwd();
 
@@ -36,7 +36,7 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: metrics test
+=== TEST 1: metrics reporter
 --- http_config eval
 "$::HttpConfig"
 . q{
@@ -54,17 +54,19 @@ server {
     location = /t {
         content_by_lua_block {
             local registry = _G.registry
-            for j = 1, 10 do
-                local measurement = registry:measurement("request" .. j, "partner", "damai")
-                local context = measurement:timer("rt"):time()
+            local measurement = registry:measurement("request")
+            local context = measurement:timer("rt"):time()
 
-                for i = 1, 10 do
-                    measurement:counter("tps"):mark(i)
-                    measurement:averager("size"):update(i)
-                end
+             pcall(function()
+                 for i = 1, 3 do
+                     measurement:counter("tps"):mark(i)
+                     measurement:averager("size"):update(i)
+                 end
+                 ngx.sleep(0.01)
+                 ngx.update_time()
+             end)
 
-                context:stop()
-            end
+            context:stop()
 
             registry:report()
             ngx.sleep(2)
@@ -76,7 +78,9 @@ GET /t
 --- response_body
 ok
 --- error_code: 200
+--- error_log eval
+qr/request,host=127.0.0.1 rt=1\d,size=2,tps=6 \d+/
 --- no_error_log
-[error]
+[warn]
 
 

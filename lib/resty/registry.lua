@@ -36,7 +36,7 @@ function _M.new(dict, reporters)
 
     return setmetatable({
         map = new_tab(0, 100),
-        reporters = reporters,
+        reporters = reporters or {},
         cache = cache
     }, mt)
 end
