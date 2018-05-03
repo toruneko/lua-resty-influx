@@ -10,7 +10,6 @@ local tonumber = tonumber
 local ngx_time = ngx.time
 local ngx_utime = ngx.usec_time
 local pairs = pairs
-local error = error
 local type = type
 
 local ffi = require "ffi"
