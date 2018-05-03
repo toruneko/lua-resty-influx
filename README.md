@@ -21,7 +21,7 @@ Synopsis
 ```lua
     # nginx.conf:
 
-    lua_package_path "/path/to/lua-resty-sm3/lib/?.lua;;";
+    lua_package_path "/path/to/lua-resty-metrics/lib/?.lua;;";
     lua_shared_dict metrics  1m;
 
     init_worker_by_lua_block {
