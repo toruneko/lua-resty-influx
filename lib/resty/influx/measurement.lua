@@ -1,8 +1,8 @@
 -- Copyright (C) by Jianhao Dai (Toruneko)
 
-local timer = require "resty.metrics.timer"
-local counter = require "resty.metrics.counter"
-local averager = require "resty.metrics.averager"
+local timer = require "resty.influx.metrics.timer"
+local counter = require "resty.influx.metrics.counter"
+local averager = require "resty.influx.metrics.averager"
 
 local pairs = pairs
 local setmetatable = setmetatable

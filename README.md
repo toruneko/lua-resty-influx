@@ -1,14 +1,14 @@
 Name
 =============
 
-lua-resty-metrics - lua metrics module for OpenResty/LuaJIT with influxdb
+lua-resty-influx - lua influx metrics module for OpenResty/LuaJIT
 
 Status
 ======
 
 This library is considered production ready.
 
-Build status: [![Travis](https://travis-ci.org/toruneko/lua-resty-metrics.svg?branch=master)](https://travis-ci.org/toruneko/lua-resty-metrics)
+Build status: [![Travis](https://travis-ci.org/toruneko/lua-resty-influx.svg?branch=master)](https://travis-ci.org/toruneko/lua-resty-influx)
 
 Description
 ===========
@@ -21,18 +21,18 @@ Synopsis
 ```lua
     # nginx.conf:
 
-    lua_package_path "/path/to/lua-resty-metrics/lib/?.lua;;";
+    lua_package_path "/path/to/lua-resty-influx/lib/?.lua;;";
     lua_shared_dict metrics  1m;
 
     init_worker_by_lua_block {
-        local resty_reporter = require "resty.influxdb.reporter"
+        local resty_reporter = require "resty.influx.db.reporter"
         local reporter = resty_reporter.new("http://127.0.0.1:12354", "user", "pass", "nginx", {
             tags = {
                 host = "127.0.0.1"
             },
             async = true
         })
-        local resty_registry = require "resty.registry"
+        local resty_registry = require "resty.influx.registry"
         _G.registry = resty_registry.new("metrics", {reporter})
 
         local reporter
@@ -81,11 +81,11 @@ Methods
 
 To load this library,
 
-1. you need to specify this library's path in ngx_lua's [lua_package_path](https://github.com/openresty/lua-nginx-module#lua_package_path) directive. For example, `lua_package_path "/path/to/lua-resty-metrics/lib/?.lua;;";`.
+1. you need to specify this library's path in ngx_lua's [lua_package_path](https://github.com/openresty/lua-nginx-module#lua_package_path) directive. For example, `lua_package_path "/path/to/lua-resty-influx/lib/?.lua;;";`.
 2. you use `require` to load the library into a local Lua variable:
 
 ```lua
-    local resty_registry = require "resty.registry"
+    local resty_registry = require "resty.influx.registry"
 ```
 
 new
@@ -96,14 +96,14 @@ Creates a new registry object instance.
 
 ```lua
 -- creates a registry object
-local resty_registry = require "resty.registry"
+local resty_registry = require "resty.influx.registry"
 local registry = resty_registry.new("metrics")
 ```
 
 Report metrics to the influxdb.
 
 ```lua
-local resty_reporter = require "resty.influxdb.reporter"
+local resty_reporter = require "resty.influx.db.reporter"
 local reporter = resty_reporter.new("http://127.0.0.1:12354", "user", "pass", "nginx")
 local registry = resty_registry.new("metrics", { reporter })
 ```

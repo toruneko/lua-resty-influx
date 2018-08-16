@@ -18,14 +18,14 @@ our $HttpConfig = <<_EOC_;
     lua_package_path "$pwd/lib/?.lua;$pwd/t/lib/?.lua;;";
     lua_shared_dict metrics  1m;
     init_worker_by_lua_block {
-        local resty_reporter = require "resty.influxdb.reporter"
+        local resty_reporter = require "resty.influx.db.reporter"
         local reporter = resty_reporter.new("http://127.0.0.1:12354", "user", "pass", "nginx", {
             tags = {
                 host = "127.0.0.1"
             },
             async = true
         })
-        local resty_registry = require "resty.registry"
+        local resty_registry = require "resty.influx.registry"
         _G.registry = resty_registry.new("metrics", {reporter})
     }
 _EOC_

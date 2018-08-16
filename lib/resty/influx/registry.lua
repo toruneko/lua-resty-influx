@@ -1,6 +1,6 @@
 -- Copyright (C) by Jianhao Dai (Toruneko)
 
-local measurement = require "resty.measurement"
+local measurement = require "resty.influx.measurement"
 
 local setmetatable = setmetatable
 local shared = ngx.shared

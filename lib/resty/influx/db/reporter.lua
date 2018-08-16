@@ -1,6 +1,6 @@
 -- Copyright (C) by Jianhao Dai (Toruneko)
-local point = require "resty.influxdb.point"
-local client = require "resty.influxdb.client"
+local point = require "resty.influx.db.point"
+local client = require "resty.influx.db.client"
 
 local setmetatable = setmetatable
 local timer_at = ngx.timer.at

@@ -1,6 +1,6 @@
 -- Copyright (C) by Jianhao Dai (Toruneko)
-local averager = require "resty.metrics.averager"
-local context = require "resty.metrics.timer.context"
+local averager = require "resty.influx.metrics.averager"
+local context = require "resty.influx.metrics.timer.context"
 local setmetatable = setmetatable
 
 local _M = { _VERSION = '0.01' }
