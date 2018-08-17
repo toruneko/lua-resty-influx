@@ -3,6 +3,7 @@ local point = require "resty.influx.db.point"
 local client = require "resty.influx.db.client"
 
 local setmetatable = setmetatable
+local worker_id = ngx.worker.id
 local timer_at = ngx.timer.at
 local concat = table.concat
 local tonumber = tonumber
@@ -32,6 +33,7 @@ function _M.new(url, username, password, database, opts)
         opts = {}
     end
     opts.tags = opts.tags or {}
+    opts.tags["worker"] = worker_id()
     opts.async = opts.async and true or false
     opts.size = tonumber(opts.size) or 100
     opts.interval = tonumber(opts.interval) or 1

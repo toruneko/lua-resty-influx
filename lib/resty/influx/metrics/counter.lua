@@ -1,14 +1,16 @@
 -- Copyright (C) by Jianhao Dai (Toruneko)
 
 local setmetatable = setmetatable
+local str_format = string.format
+local worker_id = ngx.worker.id
 
 local _M = { _VERSION = '0.01' }
 local mt = { __index = _M }
 
-function _M.new(name, cache)
+function _M.new(m_key, name, cache)
     return setmetatable({
         cache = cache,
-        count = "metrics:count:" .. name
+        count = str_format("%s%s:%s:%s", m_key, worker_id(), "cnt", name)
     }, mt)
 end
 

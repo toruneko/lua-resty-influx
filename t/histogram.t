@@ -36,7 +36,7 @@ run_tests();
 
 __DATA__
 
-=== TEST 1: metrics reporter
+=== TEST 1: histogram metrics reporter
 --- http_config eval
 "$::HttpConfig"
 . q{
@@ -54,13 +54,12 @@ server {
     location = /t {
         content_by_lua_block {
             local registry = _G.registry
-            local measurement = registry:measurement("request")
+            local measurement = registry:measurement("histogram")
             local context = measurement:timer("rt"):time()
 
              pcall(function()
                  for i = 1, 3 do
-                     measurement:counter("tps"):mark(i)
-                     measurement:averager("size"):update(i)
+                     measurement:histogram("size"):update(math.random() * 10)
                  end
                  ngx.sleep(0.01)
                  ngx.update_time()
@@ -79,6 +78,7 @@ GET /t
 ok
 --- error_code: 200
 --- error_log eval
-qr/request,host=127.0.0.1,worker=0 rt=1\d,size=2,tps=6 \d+/
+qr/histogram,host=127.0.0.1,worker=0 size.p75=7,size.max=7,size.std_dev=1.8856180831641,size.p95=7,rt=1\d,size=3,size.p99=7,size.mean=5.6666666666667,size.p98=7,size.min=3,size.median=7,size.count=3,size.p999=7 \d+/
 --- no_error_log
 [warn]
+

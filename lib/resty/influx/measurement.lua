@@ -3,6 +3,7 @@
 local timer = require "resty.influx.metrics.timer"
 local counter = require "resty.influx.metrics.counter"
 local averager = require "resty.influx.metrics.averager"
+local histogram = require "resty.influx.metrics.histogram"
 
 local pairs = pairs
 local setmetatable = setmetatable
@@ -28,7 +29,7 @@ function _M.counter(self, name)
         return self.metrics[name]
     end
 
-    local cnt = counter.new(self:get_key() .. ":" .. name, self.cache)
+    local cnt = counter.new(self:get_key(), name, self.cache)
     self.metrics[name] = cnt
     return cnt
 end
@@ -38,9 +39,19 @@ function _M.averager(self, name)
         return self.metrics[name]
     end
 
-    local avg = averager.new(self:get_key() .. ":" .. name, self.cache)
+    local avg = averager.new(self:get_key(), name, self.cache)
     self.metrics[name] = avg
     return avg
+end
+
+function _M.histogram(self, name, opts)
+    if self.metrics[name] then
+        return self.metrics[name]
+    end
+
+    local histo = histogram.new(self:get_key(), name, self.cache, opts)
+    self.metrics[name] = histo
+    return histo
 end
 
 function _M.timer(self, name)
@@ -48,7 +59,7 @@ function _M.timer(self, name)
         return self.metrics[name]
     end
 
-    local tm = timer.new(self:get_key() .. ":" .. name, self.cache)
+    local tm = timer.new(self:get_key(), name, self.cache)
     self.metrics[name] = tm
     return tm
 end

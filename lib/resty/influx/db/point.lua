@@ -1,5 +1,7 @@
 -- Copyright (C) by Jianhao Dai (Toruneko)
 
+local clock = require "resty.influx.util.clock"
+
 local setmetatable = setmetatable
 local str_format = string.format
 local concat = table.concat
@@ -7,23 +9,8 @@ local str_byte = string.byte
 local str_char = string.char
 local str_len = string.len
 local tonumber = tonumber
-local ngx_time = ngx.time
-local ngx_utime = ngx.usec_time
 local pairs = pairs
 local type = type
-
-local ffi = require "ffi"
-local ffi_new = ffi.new
-local ffi_null = ffi.null
-local C = ffi.C
-ffi.cdef [[
-    struct timeval {
-        long int tv_sec;
-        long int tv_usec;
-    };
-
-    int gettimeofday(struct timeval *tv, void *tz);
-]]
 
 local _M = { _VERSION = '0.01' }
 local mt = { __index = _M }
@@ -89,13 +76,7 @@ local function concatenate_metrics(metrics)
 end
 
 local function formated_time()
-    if ngx_utime then
-        return tonumber(ngx_time()) .. str_format("%06d", tonumber(ngx_utime()))
-    else
-        local tm = ffi_new("struct timeval")
-        C.gettimeofday(tm, ffi_null)
-        return tonumber(tm.tv_sec) .. str_format("%06d", tonumber(tm.tv_usec))
-    end
+    return str_format("%16d", clock.usec_time())
 end
 
 function _M.new(name)
