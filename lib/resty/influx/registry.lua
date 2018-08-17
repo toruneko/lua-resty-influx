@@ -3,6 +3,7 @@
 local measurement = require "resty.influx.measurement"
 
 local setmetatable = setmetatable
+local concat = table.concat
 local shared = ngx.shared
 local error = error
 local ipairs = ipairs
@@ -16,16 +17,15 @@ if not ok then
     new_tab = function(narr, nrec) return {} end
 end
 
-local function create_key(key, ...)
-    local arr = {...}
-    local tags = new_tab(0, #arr / 2)
-    for i = 1, #arr / 2 do
-        tags[arr[i * 2 - 1]] = arr[i * 2]
+local function create_key(key, tags)
+    local tab = new_tab(10, 0)
+    tab[1] = key
+
+    for name, value in pairs(tags) do
+        tab[#tab + 1] = name .. ":" .. value
     end
-    return {
-        key = key,
-        tags = tags
-    }
+
+    return concat(tab, ",")
 end
 
 function _M.new(dict, reporters)
@@ -41,14 +41,14 @@ function _M.new(dict, reporters)
     }, mt)
 end
 
-function _M.measurement(self, key, ...)
-    local m_key = create_key(key, ...)
-    if self.map[m_key] then
-        return self.map[m_key]
+function _M.measurement(self, key, tags)
+    local hashkey = tags and create_key(key, tags) or key
+    if self.map[hashkey] then
+        return self.map[hashkey]
     end
 
-    local m = measurement.new(m_key, self.cache)
-    self.map[m_key] = m
+    local m = measurement.new(key, tags, self.cache)
+    self.map[hashkey] = m
     return m
 end
 

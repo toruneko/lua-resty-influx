@@ -16,9 +16,10 @@ if not ok then
     new_tab = function(narr, nrec) return {} end
 end
 
-function _M.new(m_key, cache)
+function _M.new(key, tags, cache)
     return setmetatable({
-        m_key = m_key,
+        key = key,
+        tags = tags,
         cache = cache,
         metrics = new_tab(0, 100)
     }, mt)
@@ -73,11 +74,11 @@ function _M.get_metrics(self, name)
 end
 
 function _M.get_tags(self)
-    return self.m_key.tags
+    return self.tags
 end
 
 function _M.get_key(self)
-    return self.m_key.key
+    return self.key
 end
 
 function _M.clear(self)

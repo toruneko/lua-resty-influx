@@ -12,12 +12,12 @@ local ffi_new = ffi.new
 local ffi_null = ffi.null
 local C = ffi.C
 ffi.cdef [[
-    struct timeval {
+    struct clock_timeval_t {
         long int tv_sec;
         long int tv_usec;
     };
 
-    int gettimeofday(struct timeval *tv, void *tz);
+    int gettimeofday(struct clock_timeval_t *tv, void *tz);
 ]]
 
 local _M = { _VERSION = '0.01' }
@@ -26,7 +26,7 @@ local function usectime()
     if ngx_utime then
         return tonumber(ngx_time()) .. str_format("%06d", tonumber(ngx_utime()))
     else
-        local tm = ffi_new("struct timeval")
+        local tm = ffi_new("struct clock_timeval_t")
         C.gettimeofday(tm, ffi_null)
         return tonumber(tm.tv_sec) .. str_format("%06d", tonumber(tm.tv_usec))
     end
