@@ -30,26 +30,24 @@ Synopsis
             tags = {
                 host = "127.0.0.1"
             },
-            async = true
+            async = true -- auto flush reported data to influx
         })
         local resty_registry = require "resty.influx.registry"
         _G.registry = resty_registry.new("metrics", {reporter})
 
-        local reporter
-        reporter = function(registry)
+        local func_reporter
+        func_reporter = function(registry)
             registry:report()
         
-            local ok, err = ngx.timer.at(10, reporter, registry)
+            local ok, err = ngx.timer.at(10, func_reporter, registry)
             if not ok then
                 error(err)
             end
         end
 
-        if ngx.worker.id() == 0 then
-            local ok, err = ngx.timer.at(10, reporter, _G.registry)
-            if not ok then
-                error(err)
-            end
+        local ok, err = ngx.timer.at(10, func_reporter, _G.registry)
+        if not ok then
+            error(err)
         end
     }
 
@@ -64,12 +62,16 @@ Synopsis
                     for i = 1, 3 do
                         measurement:counter("tps"):mark(i)
                         measurement:averager("size"):update(i)
+                        measurement:histogram("value"):update(i)
                     end
                     ngx.sleep(0.01)
                     ngx.update_time()
                 end)
 
                 context:stop()
+
+                -- do report
+                registry:report()
             }
         }
     }
@@ -105,6 +107,8 @@ Report metrics to the influxdb.
 ```lua
 local resty_reporter = require "resty.influx.db.reporter"
 local reporter = resty_reporter.new("http://127.0.0.1:12354", "user", "pass", "nginx")
+
+local resty_registry = require "resty.influx.registry"
 local registry = resty_registry.new("metrics", { reporter })
 ```
 
