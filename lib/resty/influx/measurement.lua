@@ -19,7 +19,7 @@ end
 function _M.new(key, tags, cache)
     return setmetatable({
         key = key,
-        tags = tags,
+        tags = tags or {},
         cache = cache,
         metrics = new_tab(0, 100)
     }, mt)

@@ -55,7 +55,7 @@ Synopsis
         location = /t {
             content_by_lua_block {
                 local registry = _G.registry
-                local measurement = registry:measurement("request")
+                local measurement = registry:measurement("request", {tag_key = tag_val})
                 local context = measurement:timer("rt"):time()
 
                 pcall(function() 
