@@ -8,7 +8,7 @@ Status
 
 This library is considered production ready.
 
-Build status: [![Travis](https://travis-ci.org/toruneko/lua-resty-metrics.svg?branch=master)](https://travis-ci.org/toruneko/lua-resty-metrics)
+Build status: [![Travis](https://travis-ci.org/toruneko/lua-resty-influx.svg?branch=master)](https://travis-ci.org/toruneko/lua-resty-influx)
 
 Description
 ===========
