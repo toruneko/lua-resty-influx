@@ -4,8 +4,8 @@ local measurement = require "resty.influx.measurement"
 
 local setmetatable = setmetatable
 local concat = table.concat
-local shared = ngx.shared
-local error = error
+local sort = table.sort
+local md5 = ngx.md5
 local ipairs = ipairs
 local pairs = pairs
 
@@ -25,19 +25,15 @@ local function create_key(key, tags)
         tab[#tab + 1] = name .. ":" .. value
     end
 
-    return concat(tab, ",")
+    sort(tab)
+
+    return md5(concat(tab, ","))
 end
 
-function _M.new(dict, reporters)
-    local cache = shared[dict]
-    if not cache then
-        error("no shared dict: " .. dict)
-    end
-
+function _M.new(reporters)
     return setmetatable({
         map = new_tab(0, 100),
         reporters = reporters or {},
-        cache = cache
     }, mt)
 end
 

@@ -6,9 +6,9 @@ local setmetatable = setmetatable
 local _M = { _VERSION = '0.01' }
 local mt = { __index = _M }
 
-function _M.new(m_key, name, cache)
+function _M.new(key, name)
     return setmetatable({
-        avg = averager.new(m_key, name, cache),
+        avg = averager.new(key, name),
     }, mt)
 end
 

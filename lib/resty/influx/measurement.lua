@@ -16,11 +16,10 @@ if not ok then
     new_tab = function(narr, nrec) return {} end
 end
 
-function _M.new(key, tags, cache)
+function _M.new(key, tags)
     return setmetatable({
         key = key,
         tags = tags or {},
-        cache = cache,
         metrics = new_tab(0, 100)
     }, mt)
 end
@@ -30,7 +29,7 @@ function _M.counter(self, name)
         return self.metrics[name]
     end
 
-    local cnt = counter.new(self:get_key(), name, self.cache)
+    local cnt = counter.new(self.key, name)
     self.metrics[name] = cnt
     return cnt
 end
@@ -40,7 +39,7 @@ function _M.averager(self, name)
         return self.metrics[name]
     end
 
-    local avg = averager.new(self:get_key(), name, self.cache)
+    local avg = averager.new(self.key, name)
     self.metrics[name] = avg
     return avg
 end
@@ -50,7 +49,7 @@ function _M.histogram(self, name, opts)
         return self.metrics[name]
     end
 
-    local histo = histogram.new(self:get_key(), name, self.cache, opts)
+    local histo = histogram.new(self.key, name, opts)
     self.metrics[name] = histo
     return histo
 end
@@ -60,7 +59,7 @@ function _M.timer(self, name)
         return self.metrics[name]
     end
 
-    local tm = timer.new(self:get_key(), name, self.cache)
+    local tm = timer.new(self.key, name)
     self.metrics[name] = tm
     return tm
 end

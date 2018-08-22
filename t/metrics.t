@@ -26,7 +26,7 @@ our $HttpConfig = <<_EOC_;
             async = true
         })
         local resty_registry = require "resty.influx.registry"
-        _G.registry = resty_registry.new("metrics", {reporter})
+        _G.registry = resty_registry.new{reporter}
     }
 _EOC_
 

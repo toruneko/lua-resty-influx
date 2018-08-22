@@ -33,7 +33,7 @@ Synopsis
             async = true -- auto flush reported data to influx
         })
         local resty_registry = require "resty.influx.registry"
-        _G.registry = resty_registry.new("metrics", {reporter})
+        _G.registry = resty_registry.new{reporter}
 
         local func_reporter
         func_reporter = function(registry)
@@ -99,7 +99,7 @@ Creates a new registry object instance.
 ```lua
 -- creates a registry object
 local resty_registry = require "resty.influx.registry"
-local registry = resty_registry.new("metrics")
+local registry = resty_registry.new()
 ```
 
 Report metrics to the influxdb.
@@ -109,7 +109,7 @@ local resty_reporter = require "resty.influx.db.reporter"
 local reporter = resty_reporter.new("http://127.0.0.1:12354", "user", "pass", "nginx")
 
 local resty_registry = require "resty.influx.registry"
-local registry = resty_registry.new("metrics", { reporter })
+local registry = resty_registry.new{ reporter }
 ```
 
 measurement

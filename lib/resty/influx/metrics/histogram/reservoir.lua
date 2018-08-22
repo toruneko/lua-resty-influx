@@ -5,8 +5,6 @@ local skiplist = require "resty.influx.util.skiplist"
 local snapshot = require "resty.influx.metrics.histogram.snapshot"
 
 local setmetatable = setmetatable
-local str_format = string.format
-local worker_id = ngx.worker.id
 local random = math.random
 local sort = table.sort
 local exp = math.exp
@@ -23,12 +21,13 @@ local DEFAULT_ALPHA = 0.015
 local DEFAULT_SIZE = 1028
 local DEFAULT_RESCALE_TIME = 1 * 3600 * 1000 * 1000
 
-function _M.new(m_key, name, cache, opts)
+function _M.new(key, name, opts)
     local alpha = (opts and opts.alpha) or DEFAULT_ALPHA
     local size = (opts and opts.size) or DEFAULT_SIZE
     return setmetatable({
-        cache = cache,
-        count = str_format("%s%s:%s:%s", m_key, worker_id(), "histo:reservoir", name),
+        key = key,
+        name = name,
+        count = 0,
         alpha = alpha,
         size = size,
         start_time = clock.sec_time(),
@@ -49,12 +48,8 @@ function _M.update(self, value)
     local weight = exp(self.alpha * t)
     local priority = weight / random()
 
-    local new_cnt = self.cache:incr(self.count, 1, 0)
-    if not new_cnt then
-        return
-    end
-
-    if new_cnt <= self.size then
+    self.count = self.count + 1
+    if self.count <= self.size then
         self.values:insert(value, weight, priority)
     else
         local v, w, s = self.values:first()
@@ -99,7 +94,7 @@ function _M.rescale(self, now, next)
     end
 
     self.values = values
-    self.cache:set(self.count, self.values:length())
+    self.count = self.values:length()
 end
 
 return _M

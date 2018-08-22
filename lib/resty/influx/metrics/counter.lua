@@ -7,10 +7,11 @@ local worker_id = ngx.worker.id
 local _M = { _VERSION = '0.01' }
 local mt = { __index = _M }
 
-function _M.new(m_key, name, cache)
+function _M.new(key, name)
     return setmetatable({
-        cache = cache,
-        count = str_format("%s%s:%s:%s", m_key, worker_id(), "cnt", name)
+        key = key,
+        name = name,
+        count = 0
     }, mt)
 end
 
@@ -19,7 +20,7 @@ function _M.mark(self)
 end
 
 function _M.mark(self, n)
-    self.cache:incr(self.count, n, 0)
+    self.count = self.count + n
 end
 
 function _M.has_value(self)
@@ -27,14 +28,14 @@ function _M.has_value(self)
 end
 
 function _M.get_value(self)
-    return self.cache:get(self.count) or 0
+    return self.count
 end
 
 function _M.get_values(self)
 end
 
 function _M.clear(self)
-    self.cache:delete(self.count)
+    self.count = 0
 end
 
 return _M

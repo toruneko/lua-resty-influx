@@ -2,6 +2,7 @@
 local point = require "resty.influx.db.point"
 local client = require "resty.influx.db.client"
 
+local ngx_exiting = ngx.worker.exiting
 local setmetatable = setmetatable
 local worker_id = ngx.worker.id
 local timer_at = ngx.timer.at
@@ -20,6 +21,10 @@ end
 
 local do_flush
 do_flush = function(premature, reporter)
+    if premature or ngx_exiting() then
+        return
+    end
+
     reporter:flush()
 
     local ok, err = timer_at(reporter.interval, do_flush, reporter)
@@ -54,7 +59,7 @@ function _M.new(url, username, password, database, opts)
         end
     end
 
---    reporter.client:query("CREATE DATABASE \"" + database + "\" WITH DURATION 2w REPLICATION 1 NAME \"default\"")
+    --    reporter.client:query("CREATE DATABASE \"" + database + "\" WITH DURATION 2w REPLICATION 1 NAME \"default\"")
 
     return reporter
 end

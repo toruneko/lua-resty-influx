@@ -4,16 +4,16 @@ local setmetatable = setmetatable
 local tonumber = tonumber
 local random = math.random
 
-local bit = require "bit"
-local bor = bit.bor
-local band = bit.band
-
 local ffi = require "ffi"
 local ffi_new = ffi.new
+local ffi_cast = ffi.cast
 local ffi_null = ffi.null
 local C = ffi.C
 
 ffi.cdef [[
+void* malloc (size_t size);
+void free (void* ptr);
+
 typedef struct skiplistdata {
     long    value;
     double  weight;
@@ -36,17 +36,22 @@ typedef struct skiplist {
     int               level;
 } skiplist;
 ]]
-local skiplist_type = ffi.typeof("skiplist")
-local node_type = ffi.typeof("skiplistnode")
+local data_type_size = ffi.sizeof("skiplistdata")
+local node_type_size = ffi.sizeof("skiplistnode")
+local level_type_size = ffi.sizeof("struct skiplistlevel")
+local data_ptr_type = ffi.typeof("skiplistdata*")
+local node_ptr_type = ffi.typeof("skiplistnode*")
+local level_ptr_type = ffi.typeof("struct skiplistlevel*")
 local node_ptr_arr_type = ffi.typeof("skiplistnode*[?]")
-local data_type = ffi.typeof("skiplistdata")
-local level_arr_type = ffi.typeof("struct skiplistlevel[?]")
+local skiplist_type = ffi.typeof("skiplist")
+local malloc = C.malloc
+local free = C.free
 
 local SKIPLIST_MAXLEVEL = 32
 local SKIPLIST_P = 0.25
 
 local function data_create(value, weight)
-    local data = ffi_new(data_type)
+    local data = ffi_cast(data_ptr_type, malloc(data_type_size))
     data.value = value
     data.weight = weight
 
@@ -54,12 +59,18 @@ local function data_create(value, weight)
 end
 
 local function node_create(level, score, data)
-    local node = ffi_new(node_type)
+    local node = ffi_cast(node_ptr_type, malloc(node_type_size))
     node.score = score
     node.data = data
-    node.level = ffi_new(level_arr_type, level)
+    node.level = ffi_cast(level_ptr_type, malloc(level_type_size * level))
 
     return node
+end
+
+local function node_free(node)
+    free(node.data)
+    free(node.level)
+    free(node)
 end
 
 local function list_create()
@@ -79,16 +90,15 @@ end
 
 local function random_level()
     local level = 1
-    while band(random(), 0xFFFF) < (SKIPLIST_P * 0xFFFF) do
+    while (random() * 0xFFFF) < (SKIPLIST_P * 0xFFFF) do
         level = level + 1
-        return level < SKIPLIST_MAXLEVEL and level or SKIPLIST_MAXLEVEL
     end
+    return level < SKIPLIST_MAXLEVEL and level or SKIPLIST_MAXLEVEL
 end
 
 local function list_insert(list, score, data)
     local update = ffi_new(node_ptr_arr_type, SKIPLIST_MAXLEVEL)
     local rank = ffi_new("unsigned int[?]", SKIPLIST_MAXLEVEL)
-    local x, i, level
 
     local x = list.header
     for i = list.level - 1, 0, -1 do
@@ -114,11 +124,11 @@ local function list_insert(list, score, data)
     local x = node_create(level, score, data)
     for i = 0, level - 1, 1 do
         x.level[i].forward = update[i].level[i].forward
-        update[i].level[i].forward = x;
+        update[i].level[i].forward = x
 
         -- update span covered by update[i] as x is inserted here
-        x.level[i].span = update[i].level[i].span - (rank[0] - rank[i]);
-        update[i].level[i].span = (rank[0] - rank[i]) + 1;
+        x.level[i].span = update[i].level[i].span - (rank[0] - rank[i])
+        update[i].level[i].span = (rank[0] - rank[i]) + 1
     end
 
     for i = level, list.level - 1, 1 do
@@ -171,6 +181,7 @@ local function list_delete(list, score)
     x = x.level[0].forward
     if x ~= ffi_null and score == x.score then
         node_delete(list, x, update)
+        node_free(x)
         return 1
     end
 
@@ -218,62 +229,19 @@ local function list_select(list, score)
     return ffi_null
 end
 
-local function list_first_inrange(list, min, max)
-    local x = list.header
-    for i = list.level - 1, 0, -1 do
-        while x.level[i].forward ~= ffi_null and
-                x.level[i].forward.score < min do
-            x = x.level[i].forward
-        end
-    end
-
-    x = x.level[0].forward
-    if x == ffi_null then
-        return ffi_null
-    end
-
-    if x.score > max then
-        return ffi_null
-    end
-
-    return x
-end
-
-local function list_last_inrange(list, min, max)
-    local x = list.header
-    for i = list.level - 1, 0, -1 do
-        while x.level[i].forward ~= ffi_null and
-                x.level[i].forward.score <= max do
-            x = x.level[i].forward
-        end
-    end
-
-    if x == ffi_null then
-        return ffi_null
-    end
-
-    if x.score < min then
-        return ffi_null
-    end
-
-    return x
-end
-
 local function iterator(list, index)
     local x = list.header
-    local j = 0
-    for i = list.level - 1, 0, -1 do
-        while x.level[i].forward ~= ffi_null and j < index do
-            x = x.level[i].forward
-            j = j + 1
-        end
+    local i = 0
+    while x.level[0].forward ~= ffi_null and i < index do
+        x = x.level[0].forward
+        i = i + 1
     end
 
     x = x.level[0].forward
     if x == ffi_null then
         return nil, nil
     else
-        return index + 1, tonumber(x.data.value), x.data.weight, x.score
+        return index + 1, tonumber(x.data.value), tonumber(x.data.weight), tonumber(x.score)
     end
 end
 
@@ -299,7 +267,7 @@ function _M.select(self, score)
         return nil
     end
 
-    return tonumber(x.data.value), x.data.weight, x.score
+    return tonumber(x.data.value), tonumber(x.data.weight), tonumber(x.score)
 end
 
 function _M.iterator(self)
@@ -312,7 +280,7 @@ function _M.first(self)
         return nil
     end
 
-    return tonumber(x.data.value), x.data.weight, x.score
+    return tonumber(x.data.value), tonumber(x.data.weight), tonumber(x.score)
 end
 
 function _M.last(self)
@@ -321,7 +289,7 @@ function _M.last(self)
         return nil
     end
 
-    return tonumber(x.data.value), x.data.weight, x.score
+    return tonumber(x.data.value), tonumber(x.data.weight), tonumber(x.score)
 end
 
 function _M.length(self)

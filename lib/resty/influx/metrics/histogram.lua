@@ -9,16 +9,17 @@ local worker_id = ngx.worker.id
 local _M = { _VERSION = '0.01' }
 local mt = { __index = _M }
 
-function _M.new(m_key, name, cache, opts)
+function _M.new(key, name, opts)
     return setmetatable({
-        cache = cache,
-        count = str_format("%s%s:%s:%s", m_key, worker_id(), "histo:cnt", name),
-        reservoir = reservoir.new(m_key, name, cache, opts)
+        key = key,
+        name = name,
+        count = 0,
+        reservoir = reservoir.new(key, name, opts)
     }, mt)
 end
 
 function _M.update(self, value)
-    self.cache:incr(self.count, 1, 0)
+    self.count = self.count + 1
     self.reservoir:update(value)
 end
 
@@ -27,7 +28,7 @@ function _M.has_value(self)
 end
 
 function _M.get_value(self)
-    return self.cache:get(self.count) or 0
+    return self.count
 end
 
 function _M.get_values(self)
@@ -48,7 +49,7 @@ function _M.get_values(self)
 end
 
 function _M.clear(self)
-    self.cache:delete(self.count)
+    self.count = 0
 end
 
 return _M
