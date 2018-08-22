@@ -7,6 +7,7 @@ local random = math.random
 local ffi = require "ffi"
 local ffi_new = ffi.new
 local ffi_cast = ffi.cast
+local ffi_gc = ffi.gc
 local ffi_null = ffi.null
 local C = ffi.C
 
@@ -68,9 +69,25 @@ local function node_create(level, score, data)
 end
 
 local function node_free(node)
-    free(node.data)
+    if node.data ~= ffi_null then
+        free(node.data)
+    end
     free(node.level)
     free(node)
+end
+
+local function list_free(list)
+    local x = list.header
+    if x.level[0].forward == ffi_null then
+        node_free(x)
+    else
+        while x.level[0].forward ~= ffi_null do
+            local node = x.level[0].forward
+            node_free(x)
+            x = node
+        end
+        node_free(x)
+    end
 end
 
 local function list_create()
@@ -84,6 +101,8 @@ local function list_create()
     end
     list.header.backward = ffi_null
     list.tail = ffi_null
+
+    ffi_gc(list, list_free)
 
     return list
 end
