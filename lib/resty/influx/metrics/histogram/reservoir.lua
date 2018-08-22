@@ -75,7 +75,7 @@ function _M.snapshot(self)
     end
 
     sort(copy, function(a, b)
-        return a.weight > b.weight
+        return a.value < b.value
     end)
 
     return snapshot.new(copy, length)
