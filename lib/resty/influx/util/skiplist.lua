@@ -248,19 +248,16 @@ local function list_select(list, score)
     return ffi_null
 end
 
-local function iterator(list, index)
+local function iterator(list)
     local x = list.header
-    local i = 0
-    while x.level[0].forward ~= ffi_null and i < index do
-        x = x.level[0].forward
-        i = i + 1
-    end
+    local i = 0;
 
-    x = x.level[0].forward
-    if x == ffi_null then
-        return nil, nil
-    else
-        return index + 1, tonumber(x.data.value), tonumber(x.data.weight), tonumber(x.score)
+    return function()
+        i = i + 1
+        x = x.level[0].forward
+        if x ~= ffi_null then
+            return i, tonumber(x.data.value), tonumber(x.data.weight), tonumber(x.score)
+        end
     end
 end
 
@@ -290,7 +287,7 @@ function _M.select(self, score)
 end
 
 function _M.iterator(self)
-    return iterator, self.list, 0
+    return iterator(self.list)
 end
 
 function _M.first(self)
