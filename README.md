@@ -114,7 +114,7 @@ local registry = resty_registry.new{ reporter }
 
 measurement
 ----
-`syntax: measurement = registry:measurement(key, tag1, value1, tag2, value2, ...)`
+`syntax: measurement = registry:measurement(key, {tag1= value1, tag2= value2, ... })`
 
 Creates a measurement object instance.
 
