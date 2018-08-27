@@ -1,4 +1,5 @@
 -- Copyright (C) by Jianhao Dai (Toruneko)
+
 local averager = require "resty.influx.metrics.averager"
 local context = require "resty.influx.metrics.timer.context"
 local setmetatable = setmetatable

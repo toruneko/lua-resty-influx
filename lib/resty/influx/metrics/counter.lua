@@ -1,8 +1,6 @@
 -- Copyright (C) by Jianhao Dai (Toruneko)
 
 local setmetatable = setmetatable
-local str_format = string.format
-local worker_id = ngx.worker.id
 
 local _M = { _VERSION = '0.01' }
 local mt = { __index = _M }
