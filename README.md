@@ -92,7 +92,7 @@ To load this library,
 
 new
 ---
-`syntax: registry = resty_registry.new(dict, reporters)`
+`syntax: registry = resty_registry.new(reporters)`
 
 Creates a new registry object instance.
 
