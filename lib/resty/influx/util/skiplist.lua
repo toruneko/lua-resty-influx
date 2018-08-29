@@ -217,12 +217,7 @@ local function list_first(list)
 end
 
 local function list_last(list)
-    local x = list.header
-    for i = list.level - 1, 0, -1 do
-        while x.level[i].forward ~= ffi_null do
-            x = x.level[i].forward
-        end
-    end
+    local x = list.tail
 
     if x == ffi_null then
         return ffi_null

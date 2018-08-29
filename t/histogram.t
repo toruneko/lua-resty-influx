@@ -59,7 +59,7 @@ server {
 
              pcall(function()
                  for i = 1, 3 do
-                     measurement:histogram("size"):update(math.random() * 10)
+                     measurement:histogram("size", { exact = true }):update(math.random() * 10)
                  end
                  ngx.sleep(0.01)
                  ngx.update_time()

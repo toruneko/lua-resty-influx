@@ -18,6 +18,10 @@ if not ok then
 end
 
 local function create_key(key, tags)
+    if not tags then
+        return md5(key)
+    end
+
     local tab = new_tab(10, 0)
     tab[1] = key
 
@@ -38,12 +42,12 @@ function _M.new(reporters)
 end
 
 function _M.measurement(self, key, tags)
-    local hashkey = tags and create_key(key, tags) or key
+    local hashkey = create_key(key, tags)
     if self.map[hashkey] then
         return self.map[hashkey]
     end
 
-    local m = measurement.new(key, tags, self.cache)
+    local m = measurement.new(key, tags)
     self.map[hashkey] = m
     return m
 end
