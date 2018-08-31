@@ -4,7 +4,7 @@ local averager = require "resty.influx.metrics.averager"
 local context = require "resty.influx.metrics.timer.context"
 local setmetatable = setmetatable
 
-local _M = { _VERSION = '0.01' }
+local _M = { _VERSION = '0.0.1' }
 local mt = { __index = _M }
 
 function _M.new(key, name)

@@ -21,7 +21,7 @@ ffi.cdef [[
 ]]
 local timeval_type = ffi.typeof("struct clock_timeval_t")
 
-local _M = { _VERSION = '0.01' }
+local _M = { _VERSION = '0.0.1' }
 
 local function usectime()
     if ngx_utime then

@@ -12,7 +12,7 @@ local tonumber = tonumber
 local pairs = pairs
 local type = type
 
-local _M = { _VERSION = '0.01' }
+local _M = { _VERSION = '0.0.1' }
 local mt = { __index = _M }
 
 local ok, new_tab = pcall(require, "table.new")
