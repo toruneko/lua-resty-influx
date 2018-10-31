@@ -11,17 +11,21 @@ local ffi = require "ffi"
 local ffi_new = ffi.new
 local ffi_null = ffi.null
 local C = ffi.C
+
+if not pcall(ffi.typeof, "struct timeval_t") then
 ffi.cdef [[
-    struct clock_timeval_t {
+    typedef struct timeval_s {
         long int tv_sec;
         long int tv_usec;
-    };
+    } timeval_t;
 
-    int gettimeofday(struct clock_timeval_t *tv, void *tz);
+    int gettimeofday(timeval_t *tv, void *tz);
 ]]
-local timeval_type = ffi.typeof("struct clock_timeval_t")
+end
 
-local _M = { _VERSION = '0.0.1' }
+local timeval_type = ffi.typeof("timeval_t")
+
+local _M = { _VERSION = '0.0.2' }
 
 local function usectime()
     if ngx_utime then
