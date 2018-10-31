@@ -79,6 +79,6 @@ GET /t
 ok
 --- error_code: 200
 --- error_log eval
-qr/request,host=127.0.0.1,worker=0 rt=1\d,size=2,tps=6 \d+/
+qr/request,host=127.0.0.1 rt=1\d,size=2,tps=6 \d+/
 --- no_error_log
 [warn]

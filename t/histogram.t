@@ -78,7 +78,7 @@ GET /t
 ok
 --- error_code: 200
 --- error_log eval
-qr/histogram,host=127.0.0.1,worker=0 size.p75=7,size.max=7,size.std_dev=1.8856180831641,size.p95=7,rt=1\d,size=3,size.p99=7,size.mean=5.6666666666667,size.p98=7,size.min=3,size.median=7,size.count=3,size.p999=7 \d+/
+qr/histogram,host=127.0.0.1 size.p999=7,size.p99=7,size.count=3,rt=1\d,size.median=7,size.std_dev=1.8856180831641,size.p75=7,size.p98=7,size=3,size.mean=5.6666666666667,size.min=3,size.max=7,size.p95=7 \d+/
 --- no_error_log
 [warn]
 

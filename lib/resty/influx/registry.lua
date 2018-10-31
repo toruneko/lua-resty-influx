@@ -60,6 +60,7 @@ function _M.report(self)
         end
         measurement:clear()
     end
+    self.map = new_tab(0, 100)
 end
 
 return _M
