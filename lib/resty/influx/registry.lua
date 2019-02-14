@@ -9,7 +9,7 @@ local md5 = ngx.md5
 local ipairs = ipairs
 local pairs = pairs
 
-local _M = { _VERSION = '0.0.4' }
+local _M = { _VERSION = '0.0.5' }
 local mt = { __index = _M }
 
 local ok, new_tab = pcall(require, "table.new")

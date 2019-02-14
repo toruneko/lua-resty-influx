@@ -12,7 +12,7 @@ local tonumber = tonumber
 local pairs = pairs
 local type = type
 
-local _M = { _VERSION = '0.0.1' }
+local _M = { _VERSION = '0.0.2' }
 local mt = { __index = _M }
 
 local ok, new_tab = pcall(require, "table.new")
@@ -89,7 +89,7 @@ end
 
 function _M.tag(self, tags)
     for name, value in pairs(tags) do
-        self.tags[name] = value
+        self.tags[name] = value == "" and "-" or value
     end
 end
 
