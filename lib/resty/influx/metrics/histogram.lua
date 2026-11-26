@@ -48,6 +48,7 @@ end
 
 function _M.clear(self)
     self.count = 0
+    self.reservoir:clear()
 end
 
 return _M

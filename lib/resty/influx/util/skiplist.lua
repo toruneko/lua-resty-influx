@@ -8,7 +8,7 @@ local ffi = require "ffi"
 local ffi_new = ffi.new
 local ffi_cast = ffi.cast
 local ffi_gc = ffi.gc
-local ffi_null = ffi.null
+local ffi_null = ffi.cast("void *", 0)
 local C = ffi.C
 
 ffi.cdef [[
@@ -154,7 +154,11 @@ local function list_insert(list, score, data)
         update[i].level[i].span = update[i].level[i].span + 1
     end
 
-    x.backward = (update[0] == list.header) and ffi_null or update[0]
+    if update[0] == list.header then
+        x.backward = ffi_null
+    else
+        x.backward = update[0]
+    end
     if x.level[0].forward ~= ffi_null then
         x.level[0].forward.backward = x
     else
