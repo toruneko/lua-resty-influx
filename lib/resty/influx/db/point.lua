@@ -5,9 +5,7 @@ local clock = require "resty.influx.util.clock"
 local setmetatable = setmetatable
 local str_format = string.format
 local concat = table.concat
-local str_byte = string.byte
-local str_char = string.char
-local str_len = string.len
+local str_gsub = string.gsub
 local tonumber = tonumber
 local pairs = pairs
 local type = type
@@ -20,23 +18,20 @@ if not ok then
     new_tab = function(narr, nrec) return {} end
 end
 
--- escape value " ", ",", "=" => "\\ ", "\\,", "\\="
-local function escape(str)
-    local len = str_len(str)
-    local res = new_tab(len, 0)
-    for i = 1, len do
-        local b = str_byte(str, i)
-        if b == ' ' or b == ',' or b == '=' then
-            res[#res + 1] = str_char("\\")
-            res[#res + 1] = str_char(b)
-        elseif b == '"' then
-            res[#res + 1] = str_char("\\\"")
-        else
-            res[#res + 1] = str_char(b)
-        end
-    end
+-- InfluxDB line protocol escaping rules:
+--   measurement: escape "," and " "
+--   tag key / tag value / field key: escape ",", "=" and " "
+--   string field value: escape backslash and double quote
+local function escape_measurement(str)
+    return (str_gsub(tostring(str), "[, ]", "\\%0"))
+end
 
-    return concat(res, "")
+local function escape_tag(str)
+    return (str_gsub(tostring(str), "[,= ]", "\\%0"))
+end
+
+local function escape_value(str)
+    return (str_gsub(tostring(str), "[\\\"]", "\\%0"))
 end
 
 local function concatenated_tags(tags)
@@ -44,9 +39,9 @@ local function concatenated_tags(tags)
 
     for key, value in pairs(tags) do
         tab[#tab + 1] = ","
-        tab[#tab + 1] = escape(key)
+        tab[#tab + 1] = escape_tag(key)
         tab[#tab + 1] = "="
-        tab[#tab + 1] = escape(value)
+        tab[#tab + 1] = escape_tag(value)
     end
     tab[#tab + 1] = " "
 
@@ -57,14 +52,16 @@ local function concatenate_metrics(metrics)
     local tab = new_tab(0, 100)
 
     for key, value in pairs(metrics) do
-        tab[#tab + 1] = escape(key)
+        tab[#tab + 1] = escape_tag(key)
         tab[#tab + 1] = "="
         if type(value) == "string" then
             tab[#tab + 1] = "\""
-            tab[#tab + 1] = escape(value)
+            tab[#tab + 1] = escape_value(value)
             tab[#tab + 1] = "\""
         elseif type(value) == "number" then
             tab[#tab + 1] = tonumber(value)
+        elseif type(value) == "boolean" then
+            tab[#tab + 1] = value and "true" or "false"
         else
             tab[#tab + 1] = value
         end
@@ -100,7 +97,7 @@ end
 function _M.lineProtocol(self)
     local tab = new_tab(4, 0)
     -- measurement
-    tab[#tab + 1] = escape(self.name)
+    tab[#tab + 1] = escape_measurement(self.name)
     -- tags
     tab[#tab + 1] = concatenated_tags(self.tags)
     -- metrics

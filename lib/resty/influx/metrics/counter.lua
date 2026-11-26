@@ -13,12 +13,8 @@ function _M.new(key, name)
     }, mt)
 end
 
-function _M.mark(self)
-    self:mark(1)
-end
-
 function _M.mark(self, n)
-    self.count = self.count + n
+    self.count = self.count + (n or 1)
 end
 
 function _M.has_value(self)

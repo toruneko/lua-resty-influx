@@ -41,7 +41,20 @@ function _M.new(key, name, opts)
     }, mt)
 end
 
+function _M.clear(self)
+    self.count = 0
+    self.start_time = clock.sec_time()
+    self.next_scale_time = clock.usec_time() + DEFAULT_RESCALE_TIME
+    self.values = self.exact and skiplist.new() or new_tab(self.size, 0)
+end
+
 local function no_exact_update(self, value)
+    local now = clock.usec_time()
+    local next = self.next_scale_time
+    if now >= next then
+        self:rescale(now, next)
+    end
+
     local ts = clock.sec_time()
     local t = ts - self.start_time
     local weight = exp(self.alpha * t)
@@ -123,6 +136,18 @@ function _M.rescale(self, now, next)
     self.start_time = clock.sec_time()
 
     local scaling = exp(-self.alpha * (self.start_time - old_start_time))
+
+    if not self.exact then
+        -- rescale the ring buffer weights in place, otherwise they would
+        -- eventually overflow to inf (and produce nan statistics)
+        for i = 1, #self.values do
+            local data = self.values[i]
+            if data then
+                data.weight = data.weight * scaling
+            end
+        end
+        return
+    end
 
     local values = skiplist.new()
     for _, value, wegiht, score in self.values:iterator() do

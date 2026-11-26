@@ -20,7 +20,7 @@ function _M.update(self, value)
 end
 
 function _M.has_value(self)
-    return self:get_value() > 0
+    return self.count > 0
 end
 
 function _M.get_value(self)

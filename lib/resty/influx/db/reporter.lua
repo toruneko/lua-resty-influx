@@ -3,10 +3,13 @@ local point = require "resty.influx.db.point"
 local client = require "resty.influx.db.client"
 
 local ngx_exiting = ngx.worker.exiting
+local ngx_log = ngx.log
+local ngx_ERR = ngx.ERR
 local setmetatable = setmetatable
 local timer_at = ngx.timer.at
 local concat = table.concat
 local tonumber = tonumber
+local pcall = pcall
 local pairs = pairs
 local error = error
 
@@ -24,7 +27,10 @@ do_flush = function(premature, reporter)
         return
     end
 
-    reporter:flush()
+    local ok, err = pcall(reporter.flush, reporter)
+    if not ok then
+        ngx_log(ngx_ERR, "failed to flush influx metrics: ", err)
+    end
 
     local ok, err = timer_at(reporter.interval, do_flush, reporter)
     if not ok then
@@ -91,7 +97,7 @@ end
 function _M.write(self, point)
     if self.async then
         self.buffer[#self.buffer + 1] = point:lineProtocol()
-        if #self.buffer > self.size then
+        if #self.buffer >= self.size then
             self:flush()
         end
     else

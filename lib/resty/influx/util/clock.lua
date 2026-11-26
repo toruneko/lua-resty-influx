@@ -9,7 +9,7 @@ local ngx_now = ngx.now
 
 local ffi = require "ffi"
 local ffi_new = ffi.new
-local ffi_null = ffi.null
+local ffi_null = ffi.cast("void *", 0)
 local C = ffi.C
 
 ffi.cdef [[

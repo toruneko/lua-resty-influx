@@ -53,14 +53,18 @@ function _M.measurement(self, key, tags)
 end
 
 function _M.report(self)
+    -- Detach the current measurements before reporting them: reporters may
+    -- yield on network I/O, and measurements created during that time must
+    -- go into the new map instead of being discarded.
     local measurements = self.map
+    self.map = new_tab(0, 100)
+
     for _, measurement in pairs(measurements) do
         for _, reporter in ipairs(self.reporters) do
             reporter:report(measurement)
         end
         measurement:clear()
     end
-    self.map = new_tab(0, 100)
 end
 
 return _M
